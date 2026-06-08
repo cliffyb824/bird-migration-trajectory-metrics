@@ -1,0 +1,47 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Raw data
+data/raw/
+data/external/
+
+# Large generated processed data
+data/processed/*.csv
+
+# Keep processed folder documentation if tracked
+!data/processed/README.md
+
+# Local environments
+.venv/
+venv/
+env/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+
+# Generated journal submission files
+submission/*.pdf
+submission/*.zip
+submission/integrated-manuscript.md
+
+# LaTeX build products
+submission/latex/body.generated.md
+submission/latex/*.aux
+submission/latex/*.bbl
+submission/latex/*.blg
+submission/latex/*.log
+submission/latex/*.out
+submission/latex/*.pdf
+submission/latex/*.spl
+submission/figures/
+submission/supplementary-figures/
+
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.spl
+data/processed/**/*.csv
