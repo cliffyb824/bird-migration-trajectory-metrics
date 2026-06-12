@@ -52,6 +52,13 @@ Total & 386 & 381 & 88 & 374,341 & 60 \\
 }
 \end{table}
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{../../figures/route_overview_by_season.png}
+\caption{Seasonal overview of transit-focused Lesser Black-backed Gull migration routes used in the case study. Spring and autumn route sets are shown separately to emphasize that missing-route uncertainty was evaluated across season-specific movement geometry rather than on a single pooled track set.}
+\label{fig:route-overview-season}
+\end{figure}
+
 \section{Methods}\label{methods}
 
 \subsection{Diagnostic Design}\label{diagnostic-design}
@@ -245,6 +252,13 @@ At 60\% autumn gaps, Brownian bridge raw-DTW reconstructions had mean matrix cor
 
 A small scale-sensitivity check confirmed that this interpretation depends on the magnitude of assumed missing-route uncertainty. At 60\% gaps, doubling the estimated Brownian bridge scale reduced spring raw-DTW matrix correlation from 0.852 at the estimated scale to 0.616, and reduced autumn raw-DTW matrix correlation from 0.930 to 0.764. SRVF-DTW was more sensitive in autumn, where matrix correlation decreased from 0.574 at the estimated scale to 0.070 under the doubled scale. The sensitivity check therefore supports reporting downstream diagnostics across plausible reconstruction scales when the bridge scale is uncertain.
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\textwidth]{../../figures/brownian_scale_sensitivity.png}
+\caption{Sensitivity of route-distance stability to Brownian bridge perturbation scale at 60\% contiguous gaps. The estimated seasonal scale was multiplied by 0.5, 1.0, and 2.0; matrix correlations are shown separately for raw-DTW and SRVF-DTW distances.}
+\label{fig:brownian-scale-sensitivity}
+\end{figure}
+
 \begin{table}[H]
 \centering
 \caption{Brownian bridge reconstruction diagnostics at 60\% contiguous gaps. Values are means across sampled reconstructions. Matrix correlation and anomaly correlation are Spearman correlations; relative error is the median relative distance error; ARI is adjusted Rand index for cluster labels.}
@@ -275,6 +289,13 @@ Autumn & SRVF-DTW & 0.000352 & 0.707 & 0.096 & 0.493 & 0.679 & 0.622 \\
 The withheld-segment validation showed that the Brownian bridge baseline should not be interpreted as a calibrated true-path reconstruction model. Table~\ref{tab:withheld-validation} summarizes the validation diagnostics. Deterministic spherical bridge mean error increased with withheld fraction, from 74.1 km to 171.2 km in spring and from 59.8 km to 140.8 km in autumn. The pointwise center of the Brownian bridge samples had similar mean error, ranging from 75.6 km to 172.8 km in spring and from 61.8 km to 143.8 km in autumn.
 
 Brownian sampling did provide alternative plausible paths around the deterministic bridge, but the empirical 90\% envelope did not achieve nominal coverage of the withheld observations. Mean uncalibrated coverage ranged from 0.25 to 0.46 in spring and from 0.51 to 0.69 in autumn. The empirical calibration diagnostic estimated radius-inflation factors of 3.8 to 5.3 in spring and 6.5 to 8.0 in autumn, after which the calibrated pointwise coverage was approximately 0.89 to 0.90 across conditions. These results support the conservative interpretation of the Brownian bridge used in this paper: it is useful for stress-testing downstream route-comparison conclusions, but its uncertainty envelope should be validated and calibrated before being treated as a nominal coverage statement.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{../../figures/validation_calibration_summary.png}
+\caption{Withheld-segment validation and empirical envelope calibration. Mean reconstruction errors are shown for deterministic spherical bridges and Brownian bridge sample centers, while pointwise 90\% envelope coverage is compared before and after empirical radius inflation.}
+\label{fig:validation-calibration-summary}
+\end{figure}
 
 \begin{table}[H]
 \centering
