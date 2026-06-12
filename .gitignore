@@ -45,3 +45,4 @@ submission/supplementary-figures/
 *.out
 *.spl
 data/processed/**/*.csv
+1-s2.0-*.pdf

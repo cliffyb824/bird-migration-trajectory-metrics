@@ -209,8 +209,8 @@ Figure~\ref{fig:uncertainty-framework} summarizes the proposed diagnostic. A con
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{../../figures/uncertainty_framework_figure.png}
-\caption{Validate--calibrate--propagate diagnostic for incomplete migratory-route comparison. A contiguous tracking gap removes a portion of an observed migration route. A deterministic spherical bridge supplies one reconstructed route, whereas Brownian bridge sampling generates plausible alternatives inside the same gap. Sampled uncertainty envelopes can be checked and calibrated against withheld observations, then propagated into downstream distance matrices, cluster labels, and anomaly rankings.}
+\includegraphics[width=\textwidth]{../../figures/route_gap_uncertainty_framework.png}
+\caption{Route-gap uncertainty workflow for animal tracking data. A prolonged GPS gap removes part of an observed migratory route, creating uncertainty that is hidden if the track is reduced to a single completed curve. The workflow reconstructs plausible missing-route alternatives, validates and calibrates their uncertainty envelopes against withheld observations, and propagates the resulting uncertainty into distance matrices, cluster stability, anomaly rankings, and uncertainty summaries.}
 \label{fig:uncertainty-framework}
 \end{figure}
 
