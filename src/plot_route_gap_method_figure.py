@@ -19,9 +19,7 @@ COAST = 'data/external/naturalearth/ne_110m_coastline/ne_110m_coastline.shp'
 BLUE = '#276FBF'
 ORANGE = '#D95F02'
 MAGENTA = '#B44E8A'
-TEAL = '#1B9E77'
 INDIGO = '#5E5AAE'
-RED = '#C44E52'
 DARK = '#20242A'
 SEA = '#E9EEF3'
 
@@ -113,29 +111,35 @@ def clean_axes(ax):
     ax.grid(axis='y', color='#E6E9EE', linewidth=0.8)
 
 
-def panel_validation(ax, validation):
-    clean_axes(ax)
-    gaps = sorted({int(row['missing_fraction'] * 100) for row in validation})
-    x = np.arange(len(gaps))
-    width = 0.34
-    seasons = ['spring', 'autumn']
-    colors = [BLUE, ORANGE]
-    for i, season in enumerate(seasons):
-        sd = sorted([row for row in validation if row['season'] == season], key=lambda row: row['missing_fraction'])
-        coverage = [row['coverage_90_mean'] for row in sd]
-        calibrated = [row['calibrated_coverage_90_mean'] for row in sd]
-        ax.bar(x + (i - 0.5) * width, coverage, width,
-               color=colors[i], alpha=0.82, label=season.capitalize(), zorder=3)
-        ax.scatter(x + (i - 0.5) * width, calibrated,
-                   marker='D', s=34, color=DARK, edgecolor='white', linewidth=0.5, zorder=5)
-    ax.axhline(0.90, color=RED, lw=1.3, ls='--', zorder=2)
-    ax.set_ylim(0, 1.02)
-    ax.set_xticks(x)
-    ax.set_xticklabels([f'{v}%' for v in gaps])
-    ax.set_ylabel('Pointwise coverage', fontsize=9)
-    ax.set_xlabel('Withheld route fraction', fontsize=9)
-    ax.legend(frameon=False, fontsize=8, loc='upper left')
-    ax.text(0.97, 0.88, 'nominal 90%', transform=ax.transAxes, ha='right', va='center', fontsize=8.5, color=RED)
+def panel_bridge_construction(ax, complete, bridge, samples, start, stop):
+    lon, lat = sphere_to_lonlat(complete)
+    blon, blat = sphere_to_lonlat(bridge)
+    gap_slice = slice(max(0, start - 8), min(len(complete), stop + 8))
+    x0, x1 = lon[gap_slice].min(), lon[gap_slice].max()
+    y0, y1 = lat[gap_slice].min(), lat[gap_slice].max()
+    pad_x = max(0.35, (x1 - x0) * 0.35)
+    pad_y = max(0.35, (y1 - y0) * 0.35)
+    b = (x0 - pad_x, x1 + pad_x, y0 - pad_y, y1 + pad_y)
+    style_map(ax, b)
+
+    ax.plot(lon[gap_slice], lat[gap_slice], color='#B9BEC6', lw=1.6, zorder=2)
+    for sample in samples:
+        slon, slat = sphere_to_lonlat(sample)
+        ax.plot(slon[start:stop], slat[start:stop], color=MAGENTA, lw=1.25, alpha=0.22, zorder=3)
+    ax.plot(blon[start:stop], blat[start:stop], color=ORANGE, lw=2.8, zorder=5)
+    ax.scatter([lon[start - 1], lon[stop]], [lat[start - 1], lat[stop]],
+               s=46, color=BLUE, edgecolor='white', linewidth=0.7, zorder=6)
+    ax.scatter(lon[start:stop: max(1, (stop - start) // 14)],
+               lat[start:stop: max(1, (stop - start) // 14)],
+               s=18, color='white', edgecolor=ORANGE, linewidth=0.9, zorder=7)
+
+    mid = (start + stop) // 2
+    ax.annotate('', xy=(blon[mid], blat[mid]), xytext=(blon[mid] + 0.35, blat[mid] + 0.28),
+                arrowprops=dict(arrowstyle='->', lw=1.0, color=DARK), zorder=8)
+    ax.text(0.60, 0.18, 'sampled gap paths', transform=ax.transAxes,
+            fontsize=8.5, color=MAGENTA, ha='left', va='center')
+    ax.text(0.08, 0.13, 'observed endpoints', transform=ax.transAxes,
+            fontsize=8.5, color=BLUE, ha='left', va='center')
     label(ax, '(c)')
 
 
@@ -194,14 +198,13 @@ def main():
     samples = [brownian_bridge_sphere_sample(recs, start, stop, scale, rng) for _ in range(30)]
 
     plt.rcParams.update({'font.family': 'DejaVu Sans'})
-    validation = read_numeric_csv('data/processed/withheld_gap_validation_summary.csv')
     summary = read_numeric_csv('data/processed/brownian_bridge_gap_reconstruction_summary.csv')
 
     fig = plt.figure(figsize=(12.2, 7.4), facecolor='white')
     gs = gridspec.GridSpec(2, 2, figure=fig, wspace=0.18, hspace=0.28)
     panel_gap(fig.add_subplot(gs[0, 0]), complete, observed, removed)
     panel_reconstruction(fig.add_subplot(gs[0, 1]), complete, observed, bridge, samples)
-    panel_validation(fig.add_subplot(gs[1, 0]), validation)
+    panel_bridge_construction(fig.add_subplot(gs[1, 0]), complete, bridge, samples, start, stop)
     panel_propagation(fig.add_subplot(gs[1, 1]), summary)
     out = Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)
