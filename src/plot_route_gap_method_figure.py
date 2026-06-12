@@ -6,6 +6,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import gridspec
+from matplotlib.patches import Ellipse, Polygon
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from brownian_bridge_gap_reconstruction import brownian_bridge_sphere_sample, estimate_global_bridge_scale
@@ -65,6 +66,16 @@ def label(ax, text):
     ax.text(0.015, 0.985, text, transform=ax.transAxes, ha='left', va='top', fontsize=12, weight='bold', color=DARK)
 
 
+def draw_bird_icon(ax, lon, lat, scale=1.0, color=DARK):
+    wing_left = np.array([[-0.42, 0.00], [-0.12, 0.08], [0.02, 0.02], [-0.16, -0.03]]) * scale
+    wing_right = np.array([[0.42, 0.00], [0.12, 0.08], [-0.02, 0.02], [0.16, -0.03]]) * scale
+    tail = np.array([[-0.08, -0.02], [0.08, -0.02], [0.00, -0.16]]) * scale
+    ax.add_patch(Polygon(wing_left + [lon, lat], closed=True, facecolor=color, edgecolor='white', linewidth=0.35, zorder=8))
+    ax.add_patch(Polygon(wing_right + [lon, lat], closed=True, facecolor=color, edgecolor='white', linewidth=0.35, zorder=8))
+    ax.add_patch(Polygon(tail + [lon, lat], closed=True, facecolor=color, edgecolor='white', linewidth=0.25, zorder=8))
+    ax.add_patch(Ellipse((lon, lat), 0.18 * scale, 0.08 * scale, facecolor=color, edgecolor='white', linewidth=0.35, zorder=9))
+
+
 def panel_gap(ax, complete, observed, removed):
     style_map(ax, bounds(complete))
     lon, lat = sphere_to_lonlat(complete)
@@ -73,6 +84,8 @@ def panel_gap(ax, complete, observed, removed):
     ax.plot(lon, lat, color='#A7ADB5', lw=1.8, zorder=2)
     ax.scatter(olon, olat, s=8, color=BLUE, alpha=0.62, zorder=3)
     ax.plot(rlon, rlat, color=ORANGE, lw=4.2, solid_capstyle='round', zorder=5)
+    draw_bird_icon(ax, lon[0], lat[0], scale=0.75)
+    ax.scatter([lon[-1]], [lat[-1]], s=38, marker='o', color='white', edgecolor=DARK, linewidth=0.8, zorder=7)
     label(ax, '(a)')
 
 
@@ -85,6 +98,8 @@ def panel_reconstruction(ax, complete, observed, bridge, samples):
         ax.plot(slon, slat, color=MAGENTA, lw=0.95, alpha=0.20, zorder=2)
     ax.plot(blon, blat, color=ORANGE, lw=2.6, zorder=4)
     ax.scatter(olon, olat, s=7, color=BLUE, alpha=0.38, zorder=3)
+    draw_bird_icon(ax, blon[0], blat[0], scale=0.75)
+    ax.scatter([blon[-1]], [blat[-1]], s=38, marker='o', color='white', edgecolor=DARK, linewidth=0.8, zorder=7)
     label(ax, '(b)')
 
 
