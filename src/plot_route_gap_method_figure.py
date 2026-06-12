@@ -1,12 +1,11 @@
 
 """Create a clean four-panel method figure for route-gap uncertainty."""
 from __future__ import annotations
-import argparse, sys
+import argparse, csv, sys
 from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import gridspec
-from matplotlib.patches import Circle, Rectangle
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from brownian_bridge_gap_reconstruction import brownian_bridge_sphere_sample, estimate_global_bridge_scale
@@ -21,6 +20,7 @@ ORANGE = '#D95F02'
 MAGENTA = '#B44E8A'
 TEAL = '#1B9E77'
 INDIGO = '#5E5AAE'
+RED = '#C44E52'
 DARK = '#20242A'
 SEA = '#E9EEF3'
 
@@ -88,53 +88,79 @@ def panel_reconstruction(ax, complete, observed, bridge, samples):
     label(ax, '(b)')
 
 
-def panel_calibration(ax):
+def clean_axes(ax):
     ax.set_facecolor('white')
-    ax.set_xlim(0, 1)
-    ax.set_ylim(0, 1)
-    ax.set_xticks([])
-    ax.set_yticks([])
-    for s in ax.spines.values():
-        s.set_color('#30343A')
-        s.set_linewidth(0.85)
-    rng = np.random.default_rng(42)
-    centers = [(0.24, 0.68), (0.40, 0.53), (0.57, 0.66), (0.72, 0.47), (0.31, 0.31), (0.62, 0.27)]
-    for i, (x, y) in enumerate(centers):
-        raw_r = 0.045 + 0.008 * (i % 2)
-        cal_r = raw_r * 1.85
-        ax.add_patch(Circle((x, y), cal_r, fill=False, edgecolor=TEAL, linewidth=1.5, alpha=0.75))
-        ax.add_patch(Circle((x, y), raw_r, fill=False, edgecolor=MAGENTA, linewidth=1.3, alpha=0.8))
-        ax.scatter([x + rng.normal(0, 0.06)], [y + rng.normal(0, 0.06)], s=28, color=ORANGE, edgecolor='white', linewidth=0.5, zorder=4)
-    ax.plot([0.16, 0.83], [0.12, 0.12], color='#B8BEC7', lw=1.1)
-    ax.scatter([0.20, 0.32], [0.12, 0.12], s=55, facecolors='none', edgecolors=[MAGENTA, TEAL], linewidths=1.5)
-    ax.text(0.24, 0.105, 'raw', fontsize=8.5, va='center', color=MAGENTA)
-    ax.text(0.36, 0.105, 'calibrated', fontsize=8.5, va='center', color=TEAL)
+    for side in ['top', 'right']:
+        ax.spines[side].set_visible(False)
+    ax.spines['left'].set_color('#3A3F46')
+    ax.spines['bottom'].set_color('#3A3F46')
+    ax.tick_params(labelsize=8.5, colors='#333333')
+    ax.grid(axis='y', color='#E6E9EE', linewidth=0.8)
+
+
+def panel_validation(ax, validation):
+    clean_axes(ax)
+    gaps = sorted({int(row['missing_fraction'] * 100) for row in validation})
+    x = np.arange(len(gaps))
+    width = 0.34
+    seasons = ['spring', 'autumn']
+    colors = [BLUE, ORANGE]
+    for i, season in enumerate(seasons):
+        sd = sorted([row for row in validation if row['season'] == season], key=lambda row: row['missing_fraction'])
+        coverage = [row['coverage_90_mean'] for row in sd]
+        calibrated = [row['calibrated_coverage_90_mean'] for row in sd]
+        ax.bar(x + (i - 0.5) * width, coverage, width,
+               color=colors[i], alpha=0.82, label=season.capitalize(), zorder=3)
+        ax.scatter(x + (i - 0.5) * width, calibrated,
+                   marker='D', s=34, color=DARK, edgecolor='white', linewidth=0.5, zorder=5)
+    ax.axhline(0.90, color=RED, lw=1.3, ls='--', zorder=2)
+    ax.set_ylim(0, 1.02)
+    ax.set_xticks(x)
+    ax.set_xticklabels([f'{v}%' for v in gaps])
+    ax.set_ylabel('Pointwise coverage', fontsize=9)
+    ax.set_xlabel('Withheld route fraction', fontsize=9)
+    ax.legend(frameon=False, fontsize=8, loc='upper left')
+    ax.text(0.97, 0.88, 'nominal 90%', transform=ax.transAxes, ha='right', va='center', fontsize=8.5, color=RED)
     label(ax, '(c)')
 
 
-def panel_outputs(ax):
-    ax.set_facecolor('white')
-    ax.set_xlim(0, 1)
-    ax.set_ylim(0, 1)
-    ax.set_xticks([])
-    ax.set_yticks([])
-    for s in ax.spines.values():
-        s.set_color('#30343A')
-        s.set_linewidth(0.85)
-    mat = np.array([[0, .24, .55, .70, .38], [.24, 0, .35, .62, .44], [.55, .35, 0, .29, .65], [.70, .62, .29, 0, .53], [.38, .44, .65, .53, 0]])
-    ax.imshow(mat, extent=(0.08, 0.40, 0.56, 0.88), cmap='YlGnBu', vmin=0, vmax=0.75)
-    x = [0.63, 0.73, 0.83, 0.66, 0.78, 0.89]
-    y = [0.78, 0.85, 0.76, 0.60, 0.58, 0.66]
-    ax.scatter(x[:3], y[:3], s=85, color=BLUE, edgecolor='white', linewidth=0.7)
-    ax.scatter(x[3:], y[3:], s=85, color=TEAL, edgecolor='white', linewidth=0.7)
-    for i, h in enumerate([.20, .36, .24, .55, .43]):
-        ax.add_patch(Rectangle((0.12 + 0.055 * i, 0.13), 0.035, h * 0.40, facecolor=INDIGO, alpha=0.80))
-    xs = np.array([0.61, 0.70, 0.79, 0.88])
-    ys = np.array([0.28, 0.23, 0.33, 0.27])
-    ax.plot(xs, ys, color=ORANGE, lw=2.2)
-    ax.fill_between(xs, ys - 0.06, ys + 0.07, color=ORANGE, alpha=0.20)
+def panel_propagation(ax, summary):
+    clean_axes(ax)
+    filtered = [row for row in summary if row['method'] == 'brownian_bridge_sample' and abs(row['missing_fraction'] - 0.6) < 1e-9]
+    order = [('spring', 'raw_dtw'), ('spring', 'srvf_dtw'), ('autumn', 'raw_dtw'), ('autumn', 'srvf_dtw')]
+    rows = []
+    for season, metric in order:
+        rows.append(next(row for row in filtered if row['season'] == season and row['metric'] == metric))
+    x = np.arange(len(rows))
+    matrix_mean = np.array([row['matrix_spearman_mean'] for row in rows])
+    matrix_p05 = np.array([row['matrix_spearman_p05'] for row in rows])
+    matrix_p95 = np.array([row['matrix_spearman_p95'] for row in rows])
+    cluster_ari = np.array([row['cluster_ari_mean'] for row in rows])
+    ax.bar(x, matrix_mean, width=0.58,
+           color=[BLUE, INDIGO, ORANGE, MAGENTA], alpha=0.86, zorder=3)
+    ax.errorbar(x, matrix_mean, yerr=[matrix_mean - matrix_p05, matrix_p95 - matrix_mean],
+                fmt='none', ecolor='#30343A', capsize=3, lw=1.0, zorder=4)
+    ax.scatter(x, cluster_ari, s=42, color='white', edgecolor=DARK, linewidth=1.1, zorder=5, label='ARI')
+    ax.set_ylim(0, 1.04)
+    ax.set_xticks(x)
+    names = [f"{row['season'].capitalize()}\n{row['metric'].replace('_', '-')}" for row in rows]
+    ax.set_xticklabels(names, fontsize=8)
+    ax.set_ylabel('Stability at 60% gaps', fontsize=9)
+    ax.legend(frameon=False, fontsize=8, loc='lower left')
     label(ax, '(d)')
 
+def read_numeric_csv(path):
+    with open(path, newline='', encoding='utf-8') as f:
+        rows = list(csv.DictReader(f))
+    for row in rows:
+        for key, value in list(row.items()):
+            if key in {'season', 'method', 'metric'}:
+                continue
+            try:
+                row[key] = float(value)
+            except ValueError:
+                pass
+    return rows
 
 def main():
     parser = argparse.ArgumentParser()
@@ -153,12 +179,15 @@ def main():
     samples = [brownian_bridge_sphere_sample(recs, start, stop, scale, rng) for _ in range(30)]
 
     plt.rcParams.update({'font.family': 'DejaVu Sans'})
-    fig = plt.figure(figsize=(11.6, 7.2), facecolor='white')
-    gs = gridspec.GridSpec(2, 2, figure=fig, wspace=0.18, hspace=0.22)
+    validation = read_numeric_csv('data/processed/withheld_gap_validation_summary.csv')
+    summary = read_numeric_csv('data/processed/brownian_bridge_gap_reconstruction_summary.csv')
+
+    fig = plt.figure(figsize=(12.2, 7.4), facecolor='white')
+    gs = gridspec.GridSpec(2, 2, figure=fig, wspace=0.18, hspace=0.28)
     panel_gap(fig.add_subplot(gs[0, 0]), complete, observed, removed)
     panel_reconstruction(fig.add_subplot(gs[0, 1]), complete, observed, bridge, samples)
-    panel_calibration(fig.add_subplot(gs[1, 0]))
-    panel_outputs(fig.add_subplot(gs[1, 1]))
+    panel_validation(fig.add_subplot(gs[1, 0]), validation)
+    panel_propagation(fig.add_subplot(gs[1, 1]), summary)
     out = Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out, dpi=380, bbox_inches='tight', facecolor='white')
