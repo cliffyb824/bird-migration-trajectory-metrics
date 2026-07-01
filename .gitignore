@@ -46,3 +46,24 @@ submission/supplementary-figures/
 *.spl
 data/processed/**/*.csv
 1-s2.0-*.pdf
+
+# Submission build artifacts
+submission/movement-ecology/main.aux
+submission/movement-ecology/main.bbl
+submission/movement-ecology/main.blg
+submission/movement-ecology/main.log
+submission/movement-ecology/main.out
+
+# Old submission archive
+submission/elsevier-latex-source.zip
+submission/latex/
+submission/figures/
+
+# Planning artifacts
+manuscript/cover-letter.aux
+manuscript/cover-letter.log
+
+# Superseded figures
+figures/route_gap_uncertainty_framework.png
+figures/route_gap_uncertainty_framework_v2.png
+figures/uncertainty_framework_figure.png
