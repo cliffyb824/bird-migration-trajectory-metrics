@@ -7,10 +7,7 @@ data/raw/
 data/external/
 
 # Large generated processed data
-data/processed/*.csv
-
-# Keep processed folder documentation if tracked
-!data/processed/README.md
+data/processed/
 
 # Local environments
 .venv/
@@ -21,31 +18,13 @@ env/
 .DS_Store
 Thumbs.db
 
-# Generated journal submission files
-submission/*.pdf
-submission/*.zip
-submission/integrated-manuscript.md
-
-# LaTeX build products
-submission/latex/body.generated.md
-submission/latex/*.aux
-submission/latex/*.bbl
-submission/latex/*.blg
-submission/latex/*.log
-submission/latex/*.out
-submission/latex/*.pdf
-submission/latex/*.spl
-submission/figures/
-submission/supplementary-figures/
-
+# LaTeX build products (global)
 *.aux
 *.bbl
 *.blg
 *.log
 *.out
 *.spl
-data/processed/**/*.csv
-1-s2.0-*.pdf
 
 # Submission build artifacts
 submission/movement-ecology/main.aux
@@ -54,14 +33,13 @@ submission/movement-ecology/main.blg
 submission/movement-ecology/main.log
 submission/movement-ecology/main.out
 
-# Old submission archive
-submission/elsevier-latex-source.zip
-submission/latex/
-submission/figures/
+# Generated submission files
+submission/*.pdf
+submission/*.zip
+submission/integrated-manuscript.md
 
-# Planning artifacts
-manuscript/cover-letter.aux
-manuscript/cover-letter.log
+# Archived old submissions
+archive/
 
 # Superseded figures
 figures/route_gap_uncertainty_framework.png
